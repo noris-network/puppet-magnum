@@ -47,6 +47,9 @@
 #   Required when $enabled_ssl is set to 'true'.
 #   Defaults to $::os_service_default.
 #
+# [*manage_service*]
+#   Defaults to 'true'.
+#
 class magnum::api(
   $package_ensure = 'present',
   $enabled        = true,
@@ -58,6 +61,7 @@ class magnum::api(
   $enabled_ssl    = false,
   $ssl_cert_file  = $::os_service_default,
   $ssl_key_file   = $::os_service_default,
+  $manage_service = true,
 ) {
 
   include ::magnum::deps
@@ -102,13 +106,15 @@ class magnum::api(
     $ensure = 'stopped'
   }
 
-  # Manage service
-  service { 'magnum-api':
-    ensure    => $ensure,
-    name      => $::magnum::params::api_service,
-    enable    => $enabled,
-    hasstatus => true,
-    tag       => ['magnum-service', 'magnum-db-sync-service'],
+  if($manage_service) {
+      # Manage service
+      service { 'magnum-api':
+        ensure    => $ensure,
+        name      => $::magnum::params::api_service,
+        enable    => $enabled,
+        hasstatus => true,
+        tag       => ['magnum-service', 'magnum-db-sync-service'],
+      }
   }
 
   if $auth_strategy == 'keystone' {
