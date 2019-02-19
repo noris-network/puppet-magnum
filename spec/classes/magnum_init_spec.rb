@@ -47,6 +47,10 @@ describe 'magnum' do
         is_expected.to contain_magnum_config('oslo_messaging_rabbit/rabbit_userid').with_value('<SERVICE_DEFAULT>')
         is_expected.to contain_magnum_config('oslo_messaging_rabbit/rabbit_virtual_host').with_value('<SERVICE_DEFAULT>')
         is_expected.to contain_magnum_config('oslo_messaging_rabbit/kombu_failover_strategy').with_value('<SERVICE_DEFAULT>')
+        is_expected.to contain_magnum_config('oslo_messaging_rabbit/rabbit_ha_queues').with_value('<SERVICE DEFAULT>')
+        is_expected.to contain_magnum_config('oslo_messaging_rabbit/heartbeat_timeout_threshold').with_value('<SERVICE DEFAULT>')
+        is_expected.to contain_magnum_config('oslo_messaging_rabbit/heartbeat_rate').with_value('<SERVICE DEFAULT>')
+        is_expected.to contain_magnum_config('oslo_messaging_rabbit/amqp_durable_queues').with_value('<SERVICE DEFAULT>')
       end
 
       it 'configures various things' do
@@ -59,19 +63,23 @@ describe 'magnum' do
 
     context 'with overridden parameters' do
       let :params do
-        { :package_ensure             => 'latest',
-          :notification_transport_url => 'rabbit://user:pass@host:1234/virt',
-          :notification_topics        => 'openstack',
-          :notification_driver        => 'messagingv1',
-          :transport_url              => 'rabbit://user:pass@host:1234/virt',
-          :rpc_response_timeout       => '120',
-          :control_exchange           => 'magnum',
-          :rabbit_host                => '53.210.103.65',
-          :rabbit_port                => '1234',
-          :rabbit_userid              => 'me',
-          :rabbit_password            => 'secrete',
-          :rabbit_virtual_host        => 'vhost',
-          :kombu_failover_strategy    => 'shuffle',
+        { :package_ensure                     => 'latest',
+          :notification_transport_url         => 'rabbit://user:pass@host:1234/virt',
+          :notification_topics                => 'openstack',
+          :notification_driver                => 'messagingv1',
+          :transport_url                      => 'rabbit://user:pass@host:1234/virt',
+          :rpc_response_timeout               => '120',
+          :control_exchange                   => 'magnum',
+          :rabbit_host                        => '53.210.103.65',
+          :rabbit_port                        => '1234',
+          :rabbit_userid                      => 'me',
+          :rabbit_password                    => 'secrete',
+          :rabbit_virtual_host                => 'vhost',
+          :kombu_failover_strategy            => 'shuffle',
+          :rabbit_ha_queues                   => true,
+          :rabbit_heartbeat_timeout_threshold => 60,
+          :rabbit_heartbeat_rate              => 10,
+          :amqp_durable_queues                => true,
         }
       end
 
@@ -93,6 +101,10 @@ describe 'magnum' do
         is_expected.to contain_magnum_config('oslo_messaging_rabbit/rabbit_userid').with_value('me')
         is_expected.to contain_magnum_config('oslo_messaging_rabbit/rabbit_virtual_host').with_value('vhost')
         is_expected.to contain_magnum_config('oslo_messaging_rabbit/kombu_failover_strategy').with_value('shuffle')
+        is_expected.to contain_magnum_config('oslo_messaging_rabbit/rabbit_ha_queues').with_value(true)
+        is_expected.to contain_magnum_config('oslo_messaging_rabbit/heartbeat_timeout_threshold').with_value(60)
+        is_expected.to contain_magnum_config('oslo_messaging_rabbit/heartbeat_rate').with_value(10)
+        is_expected.to contain_magnum_config('oslo_messaging_rabbit/amqp_durable_queues').with_value(true)
       end
 
       it 'configures various things' do

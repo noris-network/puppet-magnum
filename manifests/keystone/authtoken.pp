@@ -21,11 +21,11 @@
 #
 # [*user_domain_name*]
 #   (Optional) Name of domain for $username
-#   Defaults to $::os_service_default
+#   Defaults to 'Default'
 #
 # [*project_domain_name*]
 #   (Optional) Name of domain for $project_name
-#   Defaults to $::os_service_default
+#   Defaults to 'Default'
 #
 # [*insecure*]
 #   (Optional) If true, explicitly allow TLS without checking server cert
@@ -168,26 +168,28 @@
 #   (Optional) The region in which the identity server can be found.
 #   Defaults to $::os_service_default.
 #
-# [*revocation_cache_time*]
-#   (Optional) Determines the frequency at which the list of revoked tokens is
-#   retrieved from the Identity service (in seconds). A high number of
-#   revocation events combined with a low cache duration may significantly
-#   reduce performance. Only valid for PKI tokens. Integer value
-#   Defaults to $::os_service_default.
-#
 # [*token_cache_time*]
 #   (Optional) In order to prevent excessive effort spent validating tokens,
 #   the middleware caches previously-seen tokens for a configurable duration
 #   (in seconds). Set to -1 to disable caching completely. Integer value
 #   Defaults to $::os_service_default.
 #
+# DEPRECATED PARAMETERS
+#
+# [*revocation_cache_time*]
+#   (Optional) Determines the frequency at which the list of revoked tokens is
+#   retrieved from the Identity service (in seconds). A high number of
+#   revocation events combined with a low cache duration may significantly
+#   reduce performance. Only valid for PKI tokens. Integer value
+#   Defaults to undef
+#
 class magnum::keystone::authtoken(
   $password,
   $username                       = 'magnum',
   $auth_url                       = 'http://localhost:35357',
   $project_name                   = 'services',
-  $user_domain_name               = $::os_service_default,
-  $project_domain_name            = $::os_service_default,
+  $user_domain_name               = 'Default',
+  $project_domain_name            = 'Default',
   $insecure                       = $::os_service_default,
   $auth_section                   = $::os_service_default,
   $auth_type                      = 'password',
@@ -215,11 +217,16 @@ class magnum::keystone::authtoken(
   $memcached_servers              = $::os_service_default,
   $manage_memcache_package        = false,
   $region_name                    = $::os_service_default,
-  $revocation_cache_time          = $::os_service_default,
   $token_cache_time               = $::os_service_default,
+  # DEPRECATED PARAMETERS
+  $revocation_cache_time          = undef,
 ) {
 
   include ::magnum::deps
+
+  if $revocation_cache_time {
+    warning('revocation_cache_time parameter is deprecated, has no effect and will be removed in the future.')
+  }
 
   keystone::resource::authtoken { 'magnum_config':
     username                       => $username,
@@ -232,10 +239,7 @@ class magnum::keystone::authtoken(
     auth_section                   => $auth_section,
     user_domain_name               => $user_domain_name,
     project_domain_name            => $project_domain_name,
-    insecure                       => $insecure,
     cache                          => $cache,
-    cafile                         => $cafile,
-    certfile                       => $certfile,
     check_revocations_for_cached   => $check_revocations_for_cached,
     delay_auth_decision            => $delay_auth_decision,
     enforce_token_bind             => $enforce_token_bind,
@@ -243,7 +247,6 @@ class magnum::keystone::authtoken(
     http_connect_timeout           => $http_connect_timeout,
     http_request_max_retries       => $http_request_max_retries,
     include_service_catalog        => $include_service_catalog,
-    keyfile                        => $keyfile,
     memcache_pool_conn_get_timeout => $memcache_pool_conn_get_timeout,
     memcache_pool_dead_retry       => $memcache_pool_dead_retry,
     memcache_pool_maxsize          => $memcache_pool_maxsize,
@@ -255,7 +258,6 @@ class magnum::keystone::authtoken(
     memcached_servers              => $memcached_servers,
     manage_memcache_package        => $manage_memcache_package,
     region_name                    => $region_name,
-    revocation_cache_time          => $revocation_cache_time,
     token_cache_time               => $token_cache_time,
   }
 
@@ -263,5 +265,9 @@ class magnum::keystone::authtoken(
     'keystone_authtoken/admin_tenant_name': value => $project_name;
     'keystone_authtoken/admin_user'       : value => $username;
     'keystone_authtoken/admin_password'   : value => $password, secret => true;
+    'keystone_auth/cafile'                : value => $cafile;
+    'keystone_auth/keyfile'               : value => $keyfile;
+    'keystone_auth/certfile'              : value => $certfile;
+    'keystone_auth/insecure'              : value => $insecure;
   }
 }

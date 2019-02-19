@@ -50,6 +50,10 @@
 # [*manage_service*]
 #   Defaults to 'true'.
 #
+# [*workers*]
+#   (Optional) Number of API workers.
+#   Defaults to $::os_workers
+#
 class magnum::api(
   $package_ensure = 'present',
   $enabled        = true,
@@ -62,6 +66,7 @@ class magnum::api(
   $ssl_cert_file  = $::os_service_default,
   $ssl_key_file   = $::os_service_default,
   $manage_service = true,
+  $workers        = $::os_workers,
 ) {
 
   include ::magnum::deps
@@ -89,6 +94,7 @@ class magnum::api(
     'api/enabled_ssl':   value => $enabled_ssl;
     'api/ssl_cert_file': value => $ssl_cert_file;
     'api/ssl_key_file':  value => $ssl_key_file;
+    'api/workers':       value => $workers;
   }
 
   # Install package
